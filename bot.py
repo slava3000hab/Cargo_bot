@@ -45,7 +45,8 @@ def get_main_menu():
     """Главное меню для отправителя"""
     keyboard = [
         [KeyboardButton(text="📦 Отправить груз"), KeyboardButton(text="🚚 Я водитель")],
-        [KeyboardButton(text="⭐ Мой рейтинг"), KeyboardButton(text="📞 Поддержка")]
+        [KeyboardButton(text="📋 Мои заявки"), KeyboardButton(text="📞 Поддержка")],
+        [KeyboardButton(text="🔄 Перезапустить бота")]
     ]
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
