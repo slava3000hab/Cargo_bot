@@ -30,14 +30,23 @@ def init_db():
     conn.commit()
     conn.close()
 
-def save_user(user_id, phone, full_name):
-    """Сохранение пользователя"""
+def save_user(user_id, phone, full_name, username=None):
+    """Сохранение пользователя с username"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    
+    # Проверяем, есть ли поле username
+    c.execute("PRAGMA table_info(users)")
+    columns = [col[1] for col in c.fetchall()]
+    
+    if 'username' not in columns:
+        c.execute("ALTER TABLE users ADD COLUMN username TEXT")
+    
+    # Сохраняем пользователя
     c.execute('''INSERT OR REPLACE INTO users 
-                 (user_id, phone, full_name, is_verified, joined_at)
-                 VALUES (?, ?, ?, 1, ?)''',
-              (user_id, phone, full_name, datetime.datetime.now()))
+                 (user_id, phone, full_name, username, is_verified, joined_at)
+                 VALUES (?, ?, ?, ?, 1, ?)''',
+              (user_id, phone, full_name, username, datetime.datetime.now()))
     conn.commit()
     conn.close()
 
@@ -119,3 +128,39 @@ def get_user_phone(user_id):
     if result:
         return result[0]
     return "Телефон не указан"
+    def update_user_username(user_id, username):
+    """Обновить username пользователя"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        # Добавляем поле username, если его нет
+        c.execute("PRAGMA table_info(users)")
+        columns = [col[1] for col in c.fetchall()]
+        
+        if 'username' not in columns:
+            c.execute("ALTER TABLE users ADD COLUMN username TEXT")
+        
+        # Обновляем username
+        c.execute("UPDATE users SET username = ? WHERE user_id = ?", (username, user_id))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Ошибка обновления username: {e}")
+        return False
+
+def get_user_username(user_id):
+    """Получить username пользователя"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT username FROM users WHERE user_id = ?", (user_id,))
+        result = c.fetchone()
+        conn.close()
+        
+        if result and result[0]:
+            return f"@{result[0]}"  # Добавляем @ для красоты
+        return None
+    except Exception as e:
+        print(f"Ошибка получения username: {e}")
+        return None
