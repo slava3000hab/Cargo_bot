@@ -364,7 +364,7 @@ async def support(message: types.Message):
     """Поддержка"""
     await message.answer(
         "📞 **Поддержка**\n\n"
-        "По всем вопросам пишите: "@Miaov3"
+        "По всем вопросам пишите: @Miaov3\n"
         "Время ответа: обычно в течение часа.",
         parse_mode="Markdown"
     )
