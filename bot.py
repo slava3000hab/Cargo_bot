@@ -261,13 +261,17 @@ async def search_cargo(message: types.Message):
     for ad in ads[:5]:  # Показываем только 5 последних
         ad_id, user_id, from_city, to_city, weight, volume, description, photo_file_id, created_at = ad
         
+        # Получаем имя отправителя
+        sender_name = db.get_user_username(user_id)
+        
         ad_text = (
             f"📦 **Заявка #{ad_id}**\n"
             f"📍 {from_city} → {to_city}\n"
             f"⚖️ {weight} кг, 📦 {volume} м³\n"
             f"📝 {description}\n"
             f"🕐 {created_at[:16]}\n\n"
-            f"Для связи с отправителем напишите @username (функция будет добавлена)"
+            f"👤 **Отправитель:** {sender_name}\n"
+            f"📞 Для связи напишите отправителю"
         )
         
         try:
