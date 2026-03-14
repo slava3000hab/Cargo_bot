@@ -265,15 +265,20 @@ async def search_cargo(message: types.Message):
         # Получаем username отправителя
         sender_username = db.get_user_username(user_id)
         
-        # Формируем текст с кликабельным username
+        if sender_username:
+            # Если есть username, показываем его
+            contact_text = f"👤 **Отправитель:** {sender_username}\n💬 Нажмите чтобы написать"
+        else:
+            # Если нет username, показываем ID
+            contact_text = f"👤 **Отправитель:** Пользователь {user_id}\n📱 Свяжитесь с админом @Miaov3"
+        
         ad_text = (
             f"📦 **Заявка #{ad_id}**\n"
             f"📍 {from_city} → {to_city}\n"
             f"⚖️ {weight} кг, 📦 {volume} м³\n"
             f"📝 {description}\n"
             f"🕐 {created_at[:16]}\n\n"
-            f"👤 **Отправитель:** {sender_username}\n"
-            f"💬 Нажмите на username выше чтобы написать"
+            f"{contact_text}"
         )
         
         try:
