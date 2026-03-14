@@ -324,7 +324,6 @@ async def filter_to_city(message: types.Message, state: FSMContext):
     from_city = data['filter_from']
     to_city = message.text
     
-    # Получаем отфильтрованные заявки
     ads = db.get_active_ads(from_city, to_city)
     
     if not ads:
@@ -335,8 +334,9 @@ async def filter_to_city(message: types.Message, state: FSMContext):
         for ad in ads[:5]:
             ad_id, user_id, f_city, t_city, weight, volume, description, photo_file_id, created_at = ad
             
-            # Получаем username отправителя
+            # Получаем данные отправителя
             sender_name = db.get_user_username(user_id)
+            sender_phone = db.get_user_phone(user_id)
             
             ad_text = (
                 f"📦 **Заявка #{ad_id}**\n"
@@ -344,8 +344,9 @@ async def filter_to_city(message: types.Message, state: FSMContext):
                 f"⚖️ {weight} кг, 📦 {volume} м³\n"
                 f"📝 {description}\n"
                 f"🕐 {created_at[:16]}\n\n"
-                f"👤 **Отправитель:** {sender_name}\n"
-                f"📞 Для связи напишите отправителю"
+                f"👤 **Имя:** {sender_name}\n"
+                f"📞 **Телефон:** {sender_phone}\n"
+                f"📱 Для связи напишите отправителю"
             )
             
             try:
