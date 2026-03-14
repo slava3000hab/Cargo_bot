@@ -251,7 +251,30 @@ async def show_rating(message: types.Message):
 @dp.message(F.text == "📞 Поддержка")
 async def support(message: types.Message):
     await message.answer("📞 По всем вопросам пишите: @your_support_username")
+import asyncio
+from aiohttp import web
 
+async def handle(request):
+    return web.Response(text="Bot is running")
+
+async def run_web_server():
+    app = web.Application()
+    app.router.add_get('/', handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', 10000)
+    await site.start()
+
+async def main():
+    await asyncio.gather(
+        dp.start_polling(bot),
+        run_web_server()
+    )
+
+if __name__ == "__main__":
+    db.init_db()
+    print("Бот запущен...")
+    asyncio.run(main())
 if __name__ == "__main__":
     db.init_db()
     print("Бот запущен...")
