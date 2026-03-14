@@ -46,7 +46,7 @@ def get_main_menu():
     keyboard = [
         [KeyboardButton(text="📦 Отправить груз"), KeyboardButton(text="🚚 Я водитель")],
         [KeyboardButton(text="📋 Мои заявки"), KeyboardButton(text="📞 Поддержка")],
-        [KeyboardButton(text="🔄 Перезапустить бота")]
+        [KeyboardButton(text="🔄 Перезапустить бота")]  # ← новая кнопка
     ]
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
@@ -54,7 +54,8 @@ def get_driver_menu():
     """Меню для водителя"""
     keyboard = [
         [KeyboardButton(text="🔍 Искать груз"), KeyboardButton(text="📍 Фильтр по городам")],
-        [KeyboardButton(text="⭐ Мой рейтинг"), KeyboardButton(text="📞 Поддержка")]
+        [KeyboardButton(text="⭐ Мой рейтинг"), KeyboardButton(text="📞 Поддержка")],
+        [KeyboardButton(text="🔄 Перезапустить бота")]  # ← и здесь
     ]
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
