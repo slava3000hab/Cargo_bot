@@ -120,6 +120,22 @@ async def handle_contact(message: types.Message, state: FSMContext):
     )
     await state.clear()
     await message.answer("Главное меню:", reply_markup=get_main_menu())
+    @dp.message(F.text == "🔄 Перезапустить бота")
+async def restart_bot(message: types.Message, state: FSMContext):
+    """Перезапуск бота (сброс состояния)"""
+    # Очищаем текущее состояние
+    await state.clear()
+    
+    # Отправляем приветственное сообщение
+    await message.answer(
+        "🔄 **Бот перезапущен!**\n\n"
+        "Все предыдущие действия отменены.\n"
+        "Вы можете начать заново.",
+        parse_mode="Markdown"
+    )
+    
+    # Показываем главное меню
+    await message.answer("Главное меню:", reply_markup=get_main_menu())
 
 # ==================== СОЗДАНИЕ ЗАЯВКИ (ОТПРАВИТЕЛЬ) ====================
 
