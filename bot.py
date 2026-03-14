@@ -373,7 +373,102 @@ async def show_rating(message: types.Message):
         "Эта функция будет добавлена в ближайшее время!",
         parse_mode="Markdown"
     )
+@dp.message(F.text == "📋 Мои заявки")
+async def my_ads(message: types.Message):
+    """Показать список заявок пользователя"""
+    user_id = message.from_user.id
+    ads = db.get_user_ads(user_id)
+    
+    if not ads:
+        await message.answer("📭 У вас пока нет активных заявок.")
+        return
+    
+    await message.answer(f"📋 **Ваши активные заявки:** ({len(ads)})", parse_mode="Markdown")
+    
+    for ad in ads:
+        ad_id, from_city, to_city, weight, volume, description, photo_file_id, created_at = ad
+        
+        # Текст заявки
+        ad_text = (
+            f"📦 **Заявка #{ad_id}**\n"
+            f"📍 {from_city} → {to_city}\n"
+            f"⚖️ {weight} кг, 📦 {volume} м³\n"
+            f"📝 {description}\n"
+            f"🕐 {created_at[:16]}"
+        )
+        
+        # Инлайн-кнопки для управления заявкой
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="✏️ Изменить", callback_data=f"edit_{ad_id}"),
+             InlineKeyboardButton(text="❌ Отменить", callback_data=f"cancel_{ad_id}")]
+        ])
+        
+        try:
+            await message.answer_photo(
+                photo=photo_file_id,
+                caption=ad_text,
+                reply_markup=keyboard,
+                parse_mode="Markdown"
+            )
+        except:
+            await message.answer(ad_text, reply_markup=keyboard, parse_mode="Markdown")
+            @dp.callback_query(F.data.startswith("cancel_"))
+async def cancel_ad_callback(callback: types.CallbackQuery):
+    """Отмена заявки"""
+    ad_id = int(callback.data.split("_")[1])
+    user_id = callback.from_user.id
+    
+    if db.cancel_ad(ad_id, user_id):
+        await callback.message.edit_caption(
+            caption=callback.message.caption + "\n\n❌ **Заявка отменена**",
+            parse_mode="Markdown"
+        )
+        await callback.answer("✅ Заявка отменена")
+    else:
+        await callback.answer("❌ Не удалось отменить заявку", show_alert=True)
 
+@dp.callback_query(F.data.startswith("edit_"))
+async def edit_ad_callback(callback: types.CallbackQuery, state: FSMContext):
+    """Редактирование заявки (пересоздание)"""
+    ad_id = int(callback.data.split("_")[1])
+    user_id = callback.from_user.id
+    
+    # Получаем данные заявки
+    conn = sqlite3.connect('cargo_bot.db')
+    c = conn.cursor()
+    c.execute('''SELECT from_city, to_city, weight, volume, description, photo_file_id 
+                 FROM cargo_ads WHERE id = ? AND user_id = ?''', (ad_id, user_id))
+    ad = c.fetchone()
+    conn.close()
+    
+    if not ad:
+        await callback.answer("❌ Заявка не найдена", show_alert=True)
+        return
+    
+    # Сохраняем данные в состояние для редактирования
+    from_city, to_city, weight, volume, description, photo_file_id = ad
+    await state.update_data(
+        from_city=from_city,
+        to_city=to_city,
+        weight=weight,
+        volume=volume,
+        description=description,
+        photo_file_id=photo_file_id,
+        editing_ad_id=ad_id  # запоминаем, что редактируем
+    )
+    
+    await callback.message.answer(
+        "🔄 **Редактирование заявки**\n\n"
+        "Текущие данные загружены. Вы можете изменить параметры.\n"
+        "Хотите загрузить новое фото? (отправьте фото или пропустите)",
+        parse_mode="Markdown"
+    )
+    
+    # Предлагаем изменить фото или пропустить
+    # Можно начать с запроса нового фото или сразу перейти к изменению полей
+    # Для простоты начнём с запроса нового фото
+    await state.set_state(CargoStates.waiting_for_photo)
+    await callback.answer()
 @dp.message(F.text == "📞 Поддержка")
 async def support(message: types.Message):
     """Поддержка"""
@@ -419,6 +514,42 @@ async def main():
         dp.start_polling(bot),
         run_web_server()
     )
+    @dp.message(CargoStates.waiting_for_description)
+async def process_description(message: types.Message, state: FSMContext):
+    # ... (код до сохранения)
+    
+    # Сохраняем заявку в базу
+    ad_id = db.save_cargo_ad(
+        user_id=message.from_user.id,
+        from_city=data['from_city'],
+        to_city=data['to_city'],
+        weight=data['weight'],
+        volume=data['volume'],
+        description=description,
+        photo_file_id=data['photo_file_id']
+    )
+    
+    # Если это редактирование, отменяем старую заявку
+    if 'editing_ad_id' in data:
+        old_ad_id = data['editing_ad_id']
+        db.cancel_ad(old_ad_id, message.from_user.id)
+        edit_msg = f"\n\n♻️ Старая заявка #{old_ad_id} отменена."
+    else:
+        edit_msg = ""
+    
+    # Отправляем подтверждение
+    await message.answer_photo(
+        photo=data['photo_file_id'],
+        caption=f"✅ **Заявка #{ad_id} создана!**{edit_msg}\n\n"
+                f"📍 {data['from_city']} → {data['to_city']}\n"
+                f"⚖️ Вес: {data['weight']} кг\n"
+                f"📦 Объём: {data['volume']} м³\n"
+                f"📝 {description}",
+        parse_mode="Markdown"
+    )
+    
+    await state.clear()
+    await message.answer("Главное меню:", reply_markup=get_main_menu())
 
 # ==================== ТОЧКА ВХОДА ====================
 
