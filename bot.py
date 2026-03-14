@@ -331,12 +331,17 @@ async def filter_to_city(message: types.Message, state: FSMContext):
         for ad in ads[:5]:
             ad_id, user_id, f_city, t_city, weight, volume, description, photo_file_id, created_at = ad
             
+            # Получаем username отправителя
+            sender_name = db.get_user_username(user_id)
+            
             ad_text = (
                 f"📦 **Заявка #{ad_id}**\n"
                 f"📍 {f_city} → {t_city}\n"
                 f"⚖️ {weight} кг, 📦 {volume} м³\n"
                 f"📝 {description}\n"
-                f"🕐 {created_at[:16]}"
+                f"🕐 {created_at[:16]}\n\n"
+                f"👤 **Отправитель:** {sender_name}\n"
+                f"📞 Для связи напишите отправителю"
             )
             
             try:
