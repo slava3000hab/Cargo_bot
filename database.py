@@ -86,3 +86,14 @@ def get_active_ads(from_city=None, to_city=None):
     ads = c.fetchall()
     conn.close()
     return ads
+def get_user_username(user_id):
+    """Получить username пользователя по его ID"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT full_name FROM users WHERE user_id = ?", (user_id,))
+    result = c.fetchone()
+    conn.close()
+    
+    if result:
+        return result[0]
+    return "Неизвестный пользователь"
