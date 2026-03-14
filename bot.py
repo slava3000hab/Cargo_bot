@@ -261,22 +261,18 @@ async def search_cargo(message: types.Message):
     for ad in ads[:5]:
         ad_id, user_id, from_city, to_city, weight, volume, description, photo_file_id, created_at = ad
         
-        # Получаем данные отправителя
-        sender_name = db.get_user_username(user_id)
-        sender_phone = db.get_user_phone(user_id)
+        # Получаем username отправителя
+        sender_username = db.get_user_username(user_id)
         
-        # Пытаемся получить username из full_name (если это username)
-        # Или можно попросить пользователей указывать username при регистрации
-        
+        # Формируем текст с кликабельным username
         ad_text = (
             f"📦 **Заявка #{ad_id}**\n"
             f"📍 {from_city} → {to_city}\n"
             f"⚖️ {weight} кг, 📦 {volume} м³\n"
             f"📝 {description}\n"
             f"🕐 {created_at[:16]}\n\n"
-            f"👤 **Имя:** {sender_name}\n"
-            f"📞 **Телефон:** {sender_phone}\n"
-            f"📱 Для связи напишите отправителю"
+            f"👤 **Отправитель:** {sender_username}\n"
+            f"💬 Нажмите на username выше чтобы написать"
         )
         
         try:
@@ -334,9 +330,8 @@ async def filter_to_city(message: types.Message, state: FSMContext):
         for ad in ads[:5]:
             ad_id, user_id, f_city, t_city, weight, volume, description, photo_file_id, created_at = ad
             
-            # Получаем данные отправителя
-            sender_name = db.get_user_username(user_id)
-            sender_phone = db.get_user_phone(user_id)
+            # Получаем username отправителя
+            sender_username = db.get_user_username(user_id)
             
             ad_text = (
                 f"📦 **Заявка #{ad_id}**\n"
@@ -344,9 +339,8 @@ async def filter_to_city(message: types.Message, state: FSMContext):
                 f"⚖️ {weight} кг, 📦 {volume} м³\n"
                 f"📝 {description}\n"
                 f"🕐 {created_at[:16]}\n\n"
-                f"👤 **Имя:** {sender_name}\n"
-                f"📞 **Телефон:** {sender_phone}\n"
-                f"📱 Для связи напишите отправителю"
+                f"👤 **Отправитель:** {sender_username}\n"
+                f"💬 Нажмите на username выше чтобы написать"
             )
             
             try:
