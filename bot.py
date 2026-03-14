@@ -258,11 +258,15 @@ async def search_cargo(message: types.Message):
     
     await message.answer(f"🔍 **Найдено заявок: {len(ads)}**\nПоказываю последние:", parse_mode="Markdown")
     
-    for ad in ads[:5]:  # Показываем только 5 последних
+    for ad in ads[:5]:
         ad_id, user_id, from_city, to_city, weight, volume, description, photo_file_id, created_at = ad
         
-        # Получаем имя отправителя
+        # Получаем данные отправителя
         sender_name = db.get_user_username(user_id)
+        sender_phone = db.get_user_phone(user_id)
+        
+        # Пытаемся получить username из full_name (если это username)
+        # Или можно попросить пользователей указывать username при регистрации
         
         ad_text = (
             f"📦 **Заявка #{ad_id}**\n"
@@ -270,8 +274,9 @@ async def search_cargo(message: types.Message):
             f"⚖️ {weight} кг, 📦 {volume} м³\n"
             f"📝 {description}\n"
             f"🕐 {created_at[:16]}\n\n"
-            f"👤 **Отправитель:** {sender_name}\n"
-            f"📞 Для связи напишите отправителю"
+            f"👤 **Имя:** {sender_name}\n"
+            f"📞 **Телефон:** {sender_phone}\n"
+            f"📱 Для связи напишите отправителю"
         )
         
         try:
@@ -280,8 +285,7 @@ async def search_cargo(message: types.Message):
                 caption=ad_text,
                 parse_mode="Markdown"
             )
-        except Exception as e:
-            # Если фото не загружается, отправляем без фото
+        except Exception:
             await message.answer(ad_text, parse_mode="Markdown")
 
 @dp.message(F.text == "📍 Фильтр по городам")
