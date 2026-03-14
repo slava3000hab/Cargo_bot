@@ -108,8 +108,9 @@ async def handle_contact(message: types.Message, state: FSMContext):
     phone = message.contact.phone_number
     user_id = message.from_user.id
     full_name = message.from_user.full_name
+    username = message.from_user.username  # Получаем username
     
-    db.save_user(user_id, phone, full_name)
+    db.save_user(user_id, phone, full_name, username)
     
     await message.answer(
         "✅ Номер подтверждён! Теперь вы можете пользоваться сервисом.",
