@@ -87,14 +87,27 @@ def get_active_ads(from_city=None, to_city=None):
     conn.close()
     return ads
 def get_user_username(user_id):
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT full_name FROM users WHERE user_id = ?", (user_id,))
-    result = c.fetchone()
-    conn.close()
-    if result:
-        return result[0]
-    return "Неизвестный пользователь"
+    """Получить username пользователя по его ID"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT full_name FROM users WHERE user_id = ?", (user_id,))
+        result = c.fetchone()
+        conn.close()
+        
+        if result and result[0]:
+            # Проверяем, похоже ли имя на username (начинается с @)
+            name = result[0]
+            if not name.startswith('@'):
+                # Если не начинается с @, добавляем @ к имени
+                # Но лучше, чтобы пользователи сами указывали username
+                return f"@{name}"
+            return name
+        else:
+            return f"Пользователь {user_id}"
+    except Exception as e:
+        print(f"Ошибка получения username: {e}")
+        return f"Пользователь {user_id}"
 def get_user_phone(user_id):
     """Получить номер телефона пользователя по его ID"""
     conn = sqlite3.connect(DB_PATH)
