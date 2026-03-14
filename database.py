@@ -164,3 +164,24 @@ def get_user_username(user_id):
     except Exception as e:
         print(f"Ошибка получения username: {e}")
         return None
+        def get_user_ads(user_id):
+    """Получить все активные заявки пользователя"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''SELECT id, from_city, to_city, weight, volume, description, photo_file_id, created_at 
+                 FROM cargo_ads 
+                 WHERE user_id = ? AND status = 'active'
+                 ORDER BY created_at DESC''', (user_id,))
+    ads = c.fetchall()
+    conn.close()
+    return ads
+
+def cancel_ad(ad_id, user_id):
+    """Отменить заявку (проверяем, что заявка принадлежит пользователю)"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("UPDATE cargo_ads SET status = 'cancelled' WHERE id = ? AND user_id = ?", (ad_id, user_id))
+    success = c.rowcount > 0
+    conn.commit()
+    conn.close()
+    return success
