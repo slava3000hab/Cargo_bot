@@ -95,3 +95,14 @@ def get_user_username(user_id):
     if result:
         return result[0]
     return "Неизвестный пользователь"
+def get_user_phone(user_id):
+    """Получить номер телефона пользователя по его ID"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT phone FROM users WHERE user_id = ?", (user_id,))
+    result = c.fetchone()
+    conn.close()
+    
+    if result:
+        return result[0]
+    return "Телефон не указан"
